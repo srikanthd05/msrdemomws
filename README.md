@@ -95,7 +95,51 @@ oc get is
 # Check your ImageStreamTags
 oc get istag
 
+# Remote Tag syntax
+<host name>/<your username>/<image name>
 
+# Load environment variables from credentials.env
+source credentials.env
+
+# Building an image with a remote tag
+docker build -t quay.io/$REGISTRY_USERNAME/private-repo .
+
+# Log into a registry
+docker login <hostname>
+
+# Log into quay.io
+docker login quay.io
+
+# Push (send) an image to a remote registry
+docker push <remote tag>
+
+# Push the image to Quay
+docker push quay.io/$REGISTRY_USERNAME/private-repo
+
+# The command to import the private image (won't work without extra auth steps)
+oc new-app quay.io/$REGISTRY_USERNAME/private-repo
+
+# You may need to run this command 
+source credentials.env
+
+# Create a Docker registry secret
+oc create secret docker-registry \
+  demo-image-pull-secret \
+  --docker-server=$REGISTRY_HOST \
+  --docker-username=$REGISTRY_USERNAME \
+  --docker-password=$REGISTRY_PASSWORD \
+  --docker-email=$REGISTRY_EMAIL
+ 
+# A touch of secrets magic
+# This command links the secret to the service account named "default"
+oc secrets link default demo-image-pull-secret --for=pull
+
+# Check that the service account has the secret associated
+oc describe serviceaccount/default
+
+
+# The same image from the start should work now
+oc new-app quay.io/$REGISTRY_USERNAME/private-repo
 
 
 
